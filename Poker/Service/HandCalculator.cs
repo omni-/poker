@@ -8,7 +8,7 @@ namespace Poker.Service
         public (HandRanking, Rank) CalculateHandRanking(List<Card> cards)
         {
             cards.Sort();
-            Rank highCard, flushRank, straightRank;
+            Rank rankValue, flushRank, straightRank;
 
             var suitGrouping = cards.GroupBy(x => x.Suit).OrderBy(x => x.Max(y => y.Rank));
             var numberGrouping = cards.GroupBy(x => x.Rank).OrderByDescending(x => x.Count()).ThenBy(x => x.Key);
@@ -25,11 +25,11 @@ namespace Poker.Service
                 }
                 return (HandRanking.StraightFlush, flushRank > straightRank ? flushRank : straightRank);
             }
-            if (CheckFourOfAKind(numberGrouping, out highCard))
-                return (HandRanking.FourOfAKind, highCard);
+            if (CheckFourOfAKind(numberGrouping, out rankValue))
+                return (HandRanking.FourOfAKind, rankValue);
 
-            if (CheckFullHouse(numberGrouping, out highCard)) 
-                return (HandRanking.FullHouse, highCard);
+            if (CheckFullHouse(numberGrouping, out rankValue)) 
+                return (HandRanking.FullHouse, rankValue);
 
             if (isFlush)
                 return (HandRanking.Flush, flushRank);
@@ -37,34 +37,34 @@ namespace Poker.Service
             if (isStraight)
                 return (HandRanking.Straight, straightRank);
 
-            if (CheckThreeOfAKind(numberGrouping, out highCard))
-                return (HandRanking.ThreeOfAKind, highCard);
+            if (CheckThreeOfAKind(numberGrouping, out rankValue))
+                return (HandRanking.ThreeOfAKind, rankValue);
 
-            if (CheckTwoPair(numberGrouping, out highCard))
-                return (HandRanking.TwoPair, highCard);
+            if (CheckTwoPair(numberGrouping, out rankValue))
+                return (HandRanking.TwoPair, rankValue);
 
-            if (CheckPair(numberGrouping, out highCard))
-                return (HandRanking.Pair, highCard);
+            if (CheckPair(numberGrouping, out rankValue))
+                return (HandRanking.Pair, rankValue);
 
-            return (HandRanking.HighCard, highCard);
+            return (HandRanking.HighCard, rankValue);
         }
 
-        private bool CheckPair(IEnumerable<IGrouping<Rank, Card>> groups, out Rank highCard) 
+        private bool CheckPair(IEnumerable<IGrouping<Rank, Card>> groups, out Rank rankValue) 
         {
-            return CheckNOfAKind(groups, 2, out highCard);
+            return CheckNOfAKind(groups, 2, out rankValue);
         }
 
-        private bool CheckTwoPair(IEnumerable<IGrouping<Rank, Card>> groups, out Rank highCard) 
+        private bool CheckTwoPair(IEnumerable<IGrouping<Rank, Card>> groups, out Rank rankValue) 
         {
-            return CheckNOfAKind(groups, 2, out highCard, 2);
+            return CheckNOfAKind(groups, 2, out rankValue, 2);
         }
-        private bool CheckThreeOfAKind(IEnumerable<IGrouping<Rank, Card>> groups, out Rank highCard) 
+        private bool CheckThreeOfAKind(IEnumerable<IGrouping<Rank, Card>> groups, out Rank rankValue) 
         {
-            return CheckNOfAKind(groups, 3, out highCard);
+            return CheckNOfAKind(groups, 3, out rankValue);
         }
-        private bool CheckStraight(List<Card> cards, out Rank highCard) 
+        private bool CheckStraight(List<Card> cards, out Rank rankValue) 
         {
-            highCard = Rank.None;
+            rankValue = Rank.None;
 
             Card last = cards[0];
             for(int i = 1; i < cards.Count; i++)
@@ -78,23 +78,23 @@ namespace Poker.Service
                     return false;
             }
 
-            highCard = last.Rank;
+            rankValue = last.Rank;
             return true;
         }
-        private bool CheckFlush(IEnumerable<IGrouping<Suit, Card>> groups, out Rank highCard) 
+        private bool CheckFlush(IEnumerable<IGrouping<Suit, Card>> groups, out Rank rankValue) 
         {
-            highCard = Rank.None;
+            rankValue = Rank.None;
 
             var group = groups.FirstOrDefault(x => x.Count() >= 5);
             if (group == null)
                 return false;
 
-            highCard = group.Max(x => x.Rank);
+            rankValue = group.Max(x => x.Rank);
             return true;
         }
-        private bool CheckFullHouse(IEnumerable<IGrouping<Rank, Card>> groups, out Rank highCard) 
+        private bool CheckFullHouse(IEnumerable<IGrouping<Rank, Card>> groups, out Rank rankValue) 
         {
-            highCard = Rank.None;
+            rankValue = Rank.None;
 
             bool triple = CheckNOfAKind(groups, 3, out Rank tripleRank);
             if (!triple) return false;
@@ -102,23 +102,23 @@ namespace Poker.Service
             bool pair = CheckNOfAKind(groups.Where(x => x.Key != tripleRank), 2, out _);
             if (!pair) return false;
 
-            highCard = tripleRank;
+            rankValue = tripleRank;
             return true;
         }
-        private bool CheckFourOfAKind(IEnumerable<IGrouping<Rank, Card>> groups, out Rank highCard) 
+        private bool CheckFourOfAKind(IEnumerable<IGrouping<Rank, Card>> groups, out Rank rankValue) 
         {
-            return CheckNOfAKind(groups, 4, out highCard);
+            return CheckNOfAKind(groups, 4, out rankValue);
         }
 
-        private bool CheckNOfAKind(IEnumerable<IGrouping<Rank, Card>> groups, int n, out Rank highCard, int groupMin = 1)
+        private bool CheckNOfAKind(IEnumerable<IGrouping<Rank, Card>> groups, int n, out Rank rankValue, int groupMin = 1)
         {
-            highCard = Rank.None;
+            rankValue = Rank.None;
 
             var kinds = groups.Where(x => x.Count() >= n);
 
             if (kinds.Count() >= groupMin)
             {
-                highCard = kinds.MaxBy(x => x.Key).Key;
+                rankValue = kinds.MaxBy(x => x.Key).Key;
                 return true;
             }
 

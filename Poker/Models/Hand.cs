@@ -8,7 +8,7 @@ namespace Poker.Models
         public List<Card> Cards { get; init; } = new List<Card>();
         public HandRanking Ranking => _ranking ?? Calculate();
 
-        public Rank HighCard {  get; private set; }
+        public Rank RankValue {  get; private set; }
 
         public bool IsInitialized => Cards.Count != 0;
 
@@ -20,8 +20,8 @@ namespace Poker.Models
             if (!IsInitialized)
                 throw new ApplicationException();
 
-            (HandRanking ranking, Rank highCard) = _calculator.CalculateHandRanking(Cards);
-            HighCard = highCard;
+            (HandRanking ranking, Rank rankValue) = _calculator.CalculateHandRanking(Cards);
+            RankValue = rankValue;
             _ranking = ranking;
             return ranking;
         }
@@ -29,7 +29,7 @@ namespace Poker.Models
         public void Clear()
         {
             _ranking = null;
-            HighCard = Rank.None;
+            RankValue = Rank.None;
             Cards.Clear();
         }
 
@@ -44,8 +44,8 @@ namespace Poker.Models
             }
             else
             {
-                if (HighCard != other.HighCard)
-                    return HighCard.CompareTo(other.HighCard);
+                if (RankValue != other.RankValue)
+                    return RankValue.CompareTo(other.RankValue);
 
                 Cards.Sort();
                 other.Cards.Sort();
