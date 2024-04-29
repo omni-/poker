@@ -5,6 +5,6 @@ namespace Poker.Service
 {
     public interface IHandCalculator
     {
-        (HandRanking, Rank) CalculateHandRanking(List<Card> cards);
+        HandResult CalculateHandRanking(List<Card> cards);
     }
 }

@@ -8,6 +8,6 @@ namespace Poker.Service
 {
     public interface IPokerService
     {
-
+        void Run();
     }
 }

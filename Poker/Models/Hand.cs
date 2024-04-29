@@ -6,31 +6,48 @@ namespace Poker.Models
     public class Hand(IHandCalculator calculator) : IComparable<Hand>
     {
         public List<Card> Cards { get; init; } = new List<Card>();
-        public HandRanking Ranking => _ranking ?? Calculate();
 
-        public Rank RankValue {  get; private set; }
+        public List<Card> BestHand => _ranking?.BestHand.ToList() ?? Calculate().BestHand.ToList();
+
+        public HandRanking Ranking => _ranking?.HandRanking ?? Calculate().HandRanking;
+
+        public Rank RankValue => _ranking?.HighCard ?? Calculate().HighCard;
 
         public bool IsInitialized => Cards.Count != 0;
 
-        private HandRanking? _ranking = null;
-        private IHandCalculator _calculator = calculator;
+        private HandResult _ranking = null;
+        private readonly IHandCalculator _calculator = calculator;
 
-        public HandRanking Calculate()
+        public HandResult Calculate()
         {
             if (!IsInitialized)
                 throw new ApplicationException();
 
-            (HandRanking ranking, Rank rankValue) = _calculator.CalculateHandRanking(Cards);
-            RankValue = rankValue;
-            _ranking = ranking;
-            return ranking;
+            var result = _calculator.CalculateHandRanking(Cards);
+            _ranking = result;
+            return result;
         }
 
         public void Clear()
         {
             _ranking = null;
-            RankValue = Rank.None;
             Cards.Clear();
+        }
+
+        public void AddCards(params Card[] cards)
+        {
+            foreach(Card c in cards)
+            {
+                Cards.Add(c);
+            }
+        }
+
+        public void AddCards(IEnumerable<Card> cards)
+        {
+            foreach (Card c in cards)
+            {
+                Cards.Add(c);
+            }
         }
 
         public int CompareTo(Hand other)
@@ -47,23 +64,23 @@ namespace Poker.Models
                 if (RankValue != other.RankValue)
                     return RankValue.CompareTo(other.RankValue);
 
-                Cards.Sort();
-                other.Cards.Sort();
+                BestHand.Sort();
+                other.BestHand.Sort();
 
-                for(int i = Cards.Count - 1; i >= 0; i--)
+                for(int i = BestHand.Count - 1; i >= 0; i--)
                 {
-                    if (Cards[i].Rank != other.Cards[i].Rank)
-                        return Cards[i].Rank.CompareTo(other.Cards[i].Rank);
+                    if (BestHand[i].Rank != other.BestHand[i].Rank)
+                        return BestHand[i].Rank.CompareTo(other.BestHand[i].Rank);
                 }
             }
 
             return 0;
         }
 
-        public Hand(IHandCalculator calculator, Card card1, Card card2, Card card3, Card card4, Card card5)
+        public Hand(IHandCalculator calculator, params Card[] cards)
             : this(calculator)
         {
-            Cards.AddRange([card1, card2, card3, card4, card5]);
+            Cards.AddRange(cards);
         }
     }
 }

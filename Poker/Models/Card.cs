@@ -1,4 +1,5 @@
-﻿using Poker.Models.Enums;
+﻿using Poker.Constants;
+using Poker.Models.Enums;
 
 namespace Poker.Models
 {
@@ -21,5 +22,9 @@ namespace Poker.Models
             return (Rank)num;
         }
 
+        public override string ToString() 
+        {
+            return $"{PokerConstants.RankMapping[Rank]}{PokerConstants.SuitMapping[Suit]}";
+        }
     }
 }
